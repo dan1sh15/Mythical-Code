@@ -142,3 +142,15 @@ Contributions are welcome! If you want to contribute:
 
 - *Author:* Mohammad Danish
 - *Contributors:* [Skand Yadav](https://github.com/skand1883), [Chirag Kumar](https://github.com/Chirag-kumar-singh)
+
+- ## UI Demonstration
+- ![Login Page](https://github.com/user-attachments/assets/b5b17457-668d-475d-afb8-30a34ae2b1b6)
+- ![Signup Page](https://github.com/user-attachments/assets/60185857-98e3-4b48-bcd3-9662103805fc)
+- ![Code Editor](https://github.com/user-attachments/assets/3153929c-4bc3-452a-be8c-16fc346b46f8)
+- ![Screenshot 2024-08-11 155943](https://github.com/user-attachments/assets/4100c0b4-8aed-4c63-afac-7e5b67d74108)
+- ![Screenshot 2024-08-11 160053](https://github.com/user-attachments/assets/73eb4312-cf9f-4250-bca2-7f0797c225c1)
+- ![Screenshot 2024-08-11 160125](https://github.com/user-attachments/assets/da926f54-be4d-4d5f-a459-6d5b1bd3dc99)
+- ![Screenshot 2024-08-11 160220](https://github.com/user-attachments/assets/595719bc-0476-4f92-bc43-b1834652222d)
+- ![Screenshot 2024-08-11 160304](https://github.com/user-attachments/assets/0f03263f-b731-49a4-b02d-1c53974f7dfa)
+
+
