@@ -141,4 +141,4 @@ Contributions are welcome! If you want to contribute:
 ## Credits
 
 - *Author:* Mohammad Danish
-- *Contributors:* Skand Yadav, Chirag Kumar
+- *Contributors:* [Skand Yadav](https://github.com/skand1883), [Chirag Kumar](https://github.com/Chirag-kumar-singh)
