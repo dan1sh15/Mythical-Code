@@ -6,12 +6,12 @@ import { Editor } from '@monaco-editor/react';
 import Loader from './Loader';
 import { AppContext } from '../context/AppContext';
 
-const Problem = () => {
+const CodingProblem = () => {
 
-  const { loading, setLoading, fetchUserDetails, setLoggedIn } = useContext(AppContext);
+  const { loading, setLoading, fetchUserDetails, setLoggedIn, userData } = useContext(AppContext);
   const navigate = useNavigate();
   const [problem, setProblem] = useState({});
-  const { id } = useParams();
+  const { id, contestId } = useParams();
   const [language, setLanguage] = useState('cpp');
   const [theme, setTheme] = useState('vs-dark');
   const [code, setCode] = useState("// Enter your code here");
@@ -31,7 +31,6 @@ const Problem = () => {
   const [showCustom, setShowCustom] = useState(false);
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
-
 
   const fecthProblem = async () => {
     const url = process.env.REACT_APP_BASE_URL + `/getProblem/${id}`;
@@ -100,6 +99,7 @@ const Problem = () => {
           setSuccess(true);
           setShow(true);
           setUserOutput(responseData.output);
+          return problem.difficulty === "Easy" ? 20 : problem?.difficulty === "Medium" ? 30 : 50; 
         } else {
           setColor("red-500");
             const responseCode = responseData.error?.error?.code;
@@ -138,7 +138,35 @@ const Problem = () => {
           setUserOutput(responseData.output)
         }
         setLoading(false);
+        return 0;
   };
+
+  const submitHandler = async () => {
+    setLoading(true);
+    const score = await checkProblem();
+    const url = process.env.REACT_APP_BASE_URL + '/addScore';
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "auth-token": localStorage.getItem('token')
+        },
+        body: JSON.stringify({
+            userId: userData?._id,
+            contestId,
+            score
+        })
+    });
+
+    const responseData = await response.json();
+    if(responseData.success) {
+        setLoading(false);
+        toast.success("Score updated successfully");
+    } else {
+        setLoading(false);
+        toast.error("Score cannot be updated at the moment");
+    }
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -199,7 +227,7 @@ const Problem = () => {
 
             <div className='w-full flex items-end justify-center gap-x-3'>
               <button onClick={runCodeHandler} className='bg-white text-green-400 border border-green-400 px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none text-sm'><FaPlay /> Run Code</button>
-              <button onClick={checkProblem} className='bg-green-500 text-white text-sm px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none'>Submit</button>
+              <button onClick={submitHandler} className='bg-green-500 text-white text-sm px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none'>Submit</button>
             </div>
 
             <select name="theme" id="theme"
@@ -276,4 +304,4 @@ const Problem = () => {
   )
 }
 
-export default Problem
+export default CodingProblem

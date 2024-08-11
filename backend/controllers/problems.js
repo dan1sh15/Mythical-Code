@@ -104,21 +104,11 @@ exports.checkProblem = async (req, res) => {
             userOutput = await executePy(filePath, inputPath);
         }
         // console.log("aa", userOutput)
-        userOutput = userOutput.trim();
-        // console.log("bb", userOutput)
-        // console.log(userOutput);
-        // console.log("---");
-        // console.log(problem.output);
-        // console.log("---");
-        
-        // userOutput = userOutput.replace(/\n/g, "    ");
-        // problem.output = problem.output.replace(/\n/g, "    ");
+        userOutput = userOutput.trim()
         console.log(JSON.stringify(userOutput));
         console.log("---");
         console.log(JSON.stringify(problem.output));
-        // problem.output=problem.output.replace(/\n/g, "\r\n");
-        // console.log("---");
-        // console.log(JSON.stringify(problem.output));
+        
         if (userOutput === problem.output) {
             return res.status(200).json({
                 success: true,

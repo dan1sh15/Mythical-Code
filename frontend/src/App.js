@@ -1,23 +1,44 @@
-import { useState } from 'react';
 import './App.css';
 import Home from './components/Home';
 import Navbar from './components/Navbar';
 import { Route, Routes } from 'react-router-dom';
 import CodingArena from "./components/CodingArena";
 import Problem from './components/Problem';
+import Login from './components/auth/Login';
+import Signup from './components/auth/Signup';
+import { useContext, useEffect } from 'react';
+import { AppContext } from './context/AppContext';
+import CodingBattle from './components/CodingBattle';
+import ContestPage from './components/ContestPage';
+import CodingProblem from './components/CodingProblem';
+import CreateContest from './components/CreateContest';
 
 function App() {
+  const { setLoggedIn } = useContext(AppContext);
 
-  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if(token) {
+      setLoggedIn(true);
+    }
+  }, [setLoggedIn]);
 
   return (
     <div className="w-full min-h-screen poppins">
       <Navbar />
       
       <Routes>
-        <Route path="/" element={<Home loading={loading} setLoading={setLoading} />} />
+        <Route path="/" element={<Home />} />
         <Route path="/codingArena" element={<CodingArena />} />
-        <Route path="/codingArena/:id" element={<Problem loading={loading} setLoading={setLoading} />} />
+        <Route path="/codingArena/:id" element={<Problem  />} />
+        <Route path='/codingBattleground' element={<CodingBattle />} />
+        <Route path='/contest/:id' element={<ContestPage />} />
+        <Route path='/contest/:contestId/problem/:id' element={<CodingProblem />} />
+
+        <Route path='/createContest/:id' element={<CreateContest />} />
+
+        <Route path='/login' element={<Login />} />
+        <Route path='/signup' element={<Signup />} />
       </Routes>
     </div>
   );

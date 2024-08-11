@@ -1,11 +1,14 @@
 import { Editor } from '@monaco-editor/react';
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { TypeAnimation } from 'react-type-animation';
 import { FaPlay } from "react-icons/fa6";
 import Loader from './Loader';
 import toast from 'react-hot-toast';
+import { AppContext } from '../context/AppContext';
 
-const Home = ({ loading, setLoading }) => {
+const Home = () => {
+
+    const { loading, setLoading } = useContext(AppContext);
 
     const [language, setLanguage] = useState('cpp');
     const [theme, setTheme] = useState('vs-dark');
@@ -84,7 +87,7 @@ const Home = ({ loading, setLoading }) => {
             }
         }
         setLoading(false);
-    }
+    };
 
   return (
     <section className='pt-[13vh] w-10/12 mx-auto flex flex-col gap-y-7 min-h-screen'>
@@ -111,7 +114,6 @@ const Home = ({ loading, setLoading }) => {
                     >
                         <option value="c++">C++</option>
                         <option value="python">Ptyhon</option>
-                        <option value="javascript">JavaScript</option>
                     </select>
 
                     <div className='w-full flex items-center justify-center px-5'>
