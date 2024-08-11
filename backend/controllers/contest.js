@@ -51,9 +51,7 @@ exports.addProblemToContest = async (req, res) => {
 
        const updatedContest = await Contest.findByIdAndUpdate(contestId, {
         $push: {
-            problems: {
-                problem: problemId,
-            }
+            problems: problemId
         }
        }, { new: true }).populate('problems', 'users.user').exec();
 

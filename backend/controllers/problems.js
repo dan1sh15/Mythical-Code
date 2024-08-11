@@ -105,11 +105,13 @@ exports.checkProblem = async (req, res) => {
         }
         // console.log("aa", userOutput)
         userOutput = userOutput.trim()
+        userOutput = userOutput.replace(/\r/g, '');
         console.log(JSON.stringify(userOutput));
         console.log("---");
-        console.log(JSON.stringify(problem.output));
-        
-        if (userOutput === problem.output) {
+        let problemOutput = problem.output.trim();
+        console.log(JSON.stringify(problemOutput));
+
+        if (userOutput === problemOutput) {
             return res.status(200).json({
                 success: true,
                 message: "All test case passed",

@@ -73,7 +73,7 @@ const CodingArena = () => {
       </div>
 
       </div>
-      <AddProblem showModal={showModal} setShowModal={setShowModal} fetchProblems={fetchProblems} />
+      <AddProblem showModal={showModal} setShowModal={setShowModal} fetchProblems={fetchProblems} from="Arena" />
     </>
   )
 }

@@ -34,7 +34,6 @@ function App() {
         <Route path='/codingBattleground' element={<CodingBattle />} />
         <Route path='/contest/:id' element={<ContestPage />} />
         <Route path='/contest/:contestId/problem/:id' element={<CodingProblem />} />
-
         <Route path='/createContest/:id' element={<CreateContest />} />
 
         <Route path='/login' element={<Login />} />

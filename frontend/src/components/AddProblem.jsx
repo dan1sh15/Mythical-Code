@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import Loader from './Loader';
 import toast from 'react-hot-toast';
 import { AiOutlineClose } from "react-icons/ai";
+import { useNavigate } from 'react-router-dom';
 
-const AddProblem = ({ showModal, setShowModal, fetchProblems }) => {
+const AddProblem = ({ showModal, setShowModal, fetchProblems, from, contestId, fetchContestDetails }) => {
 
     const [problem, setProblem] = useState({
         title: "",
@@ -12,6 +13,8 @@ const AddProblem = ({ showModal, setShowModal, fetchProblems }) => {
         input: "",
         output: ""
     });
+
+    const navigate = useNavigate();
 
     const [loading, setLoading] = useState(false);
 
@@ -23,16 +26,15 @@ const AddProblem = ({ showModal, setShowModal, fetchProblems }) => {
             }
         });
     };
-
-    const submitHandler = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+    const [problemId, setProblemId] = useState("");
+    const addProblem = async () => {
         const url = process.env.REACT_APP_BASE_URL + '/addProblem';
         problem.slug = problem.title;
         const response = await fetch(url, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "auth-token": localStorage.getItem('token')
             },
             body: JSON.stringify({...problem})
         });
@@ -41,12 +43,61 @@ const AddProblem = ({ showModal, setShowModal, fetchProblems }) => {
 
         if(responseData.success) {
             toast.success(responseData.message);
-            await fetchProblems();
+            setProblemId(responseData?.problem?._id);
+            if(from === "Arena") await fetchProblems();
         } else {
-            toast.error(responseData.message);
+            toast.error(responseData.message + " Add");
         }
-        setLoading(false);
-        setShowModal(false);
+    }
+
+    const addProblemToContest = async () => {
+        
+        const url = process.env.REACT_APP_BASE_URL + `/addProblemToContest`;
+        
+        const response = await fetch(url, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "auth-token": localStorage.getItem('token')
+            },
+            body: JSON.stringify({
+                problemId,
+                contestId
+            })
+        });
+
+        const responseData = await response.json();
+
+        if(responseData.success) {
+            await fetchContestDetails();
+            
+        } else {
+            toast.error(responseData.message + " Contest");
+        }
+    }
+
+    const submitHandler = async (e) => {
+        e.preventDefault();
+        if(from === "Arena") {
+            setLoading(true);
+            await addProblem();
+            setShowModal(false);
+            setLoading(false);
+        }
+        else if(from === "Contest") {
+            setLoading(true);
+            await addProblem();
+            await addProblemToContest();
+            setLoading(false);
+            setShowModal(false);
+        }
+        setProblem({
+            title: "",
+            difficulty: "Easy",
+            description: "",
+            input: "",
+            output: ""
+        });
     };
 
   return (

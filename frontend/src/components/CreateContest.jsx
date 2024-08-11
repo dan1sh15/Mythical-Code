@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { AppContext } from '../context/AppContext';
 import toast from 'react-hot-toast';
+import AddProblem from './AddProblem';
 
 const CreateContest = () => {
 
@@ -32,7 +33,7 @@ const CreateContest = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if(!token) {
+        if(token) {
             const fetchData = async () => {
                 await fetchContestDetails();
             }
@@ -42,6 +43,9 @@ const CreateContest = () => {
         }
         // eslint-disable-next-line
     }, []);
+
+    const [showModal, setShowModal] = useState(false);
+
 
   return (
     <div className='w-10/12 mx-auto min-h-screen flex flex-col gap-y-10 pt-[13vh] pb-10'>
@@ -67,7 +71,9 @@ const CreateContest = () => {
         </div>
       </div>
 
-      <button className='w-fit text-lg mx-auto text-white bg-green-400 px-5 py-2'>Add Problem</button>
+      <button onClick={() => setShowModal(true)} className='w-fit text-lg mx-auto rounded-md text-white bg-green-400 px-5 py-2'>Add Problem</button>
+
+      <AddProblem fetchContestDetails={fetchContestDetails} showModal={showModal} setShowModal={setShowModal} from="Contest" contestId={contest._id} />
     </div>
   )
 }

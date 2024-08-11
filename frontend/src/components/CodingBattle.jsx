@@ -105,7 +105,7 @@ const CodingBattle = () => {
         if(responseData.success) {
             toast.success(responseData.message);
             setLoading(false);
-            navigate(`/creatContest/${responseData?.contest?._id}`);
+            navigate(`/createContest/${responseData?.contest?._id}`);
         } else {
             setLoading(false);
             toast.error(responseData.message);

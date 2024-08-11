@@ -251,14 +251,16 @@ const Problem = () => {
                     </div>
                 ) : (
                   <div className='flex h-full flex-col px-5 justify-evenly'>
-                    <div className='flex flex-col gap-y-2'>
-                      <p>Your Output</p>
-                      <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{userOutput}</pre>
-                    </div>
+                    <div className='flex gap-x-3 items-center justify-between'>
+                      <div className='flex flex-col gap-y-2 w-full'>
+                        <p>Your Output</p>
+                        <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{userOutput}</pre>
+                      </div>
 
-                    <div className='flex flex-col gap-y-2'>
-                      <p>Desired Output</p>
-                      <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{problem?.output}</pre>
+                      <div className='flex flex-col gap-y-2 w-full'>
+                        <p>Desired Output</p>
+                        <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{problem?.output}</pre>
+                      </div>
                     </div>
 
                     <div className={`w-full bg-gray-200 ${success ? 'text-green-400' : 'text-red-600'} p-2 text-center text-lg mt-5 font-semibold`}>
