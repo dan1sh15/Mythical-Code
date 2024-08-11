@@ -94,6 +94,7 @@ Explore the different features by navigating through the Code Editor, Coding Are
 # Project Structure
 
 The project is organized into two main components:
+```
 mythical-code/
 │
 ├── backend/
@@ -112,7 +113,7 @@ mythical-code/
 │ └── package.json
 │
 └── README.md
-
+```
 
 ## Technologies Used
 
@@ -123,7 +124,7 @@ mythical-code/
 ## Mobile App
 
 Currently in development
-
+[App Repository](https://github.com/Chirag-kumar-singh/Mythical-Code-Mobile-App)
 
 ## Contributing
 
@@ -140,4 +141,4 @@ Contributions are welcome! If you want to contribute:
 ## Credits
 
 - *Author:* Mohammad Danish
-- *Contributors:* Skand Yadav, Chirag Kumar
+- *Contributors:* [Skand Yadav](https://github.com/skand1883), [Chirag Kumar](https://github.com/Chirag-kumar-singh)
