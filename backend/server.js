@@ -106,7 +106,6 @@ function deleteOldFiles() {
 setInterval(deleteOldFiles,5 * 60 * 1000); 
 
 const Contest = require('./models/Contest');
-// This job runs every hour to check for expired contests
 cron.schedule('* * * * *', async () => {
     const now = new Date();
     const expiredContests = await Contest.find({
