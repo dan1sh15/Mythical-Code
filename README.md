@@ -144,6 +144,6 @@ Contributions are welcome! If you want to contribute:
 - *Contributors:* [Skand Yadav](https://github.com/skand1883), [Chirag Kumar](https://github.com/Chirag-kumar-singh)
 
 - ## UI Demonstration
-- https://github.com/user-attachments/assets/b5b17457-668d-475d-afb8-30a34ae2b1b6
+- [Login Page](https://github.com/user-attachments/assets/b5b17457-668d-475d-afb8-30a34ae2b1b6)
 
-- https://github.com/user-attachments/assets/60185857-98e3-4b48-bcd3-9662103805fc
+- [Signup Page](https://github.com/user-attachments/assets/60185857-98e3-4b48-bcd3-9662103805fc)
