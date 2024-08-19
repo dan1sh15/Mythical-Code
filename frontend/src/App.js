@@ -30,7 +30,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/codingArena" element={<CodingArena />} />
-        <Route path="/codingArena/:id" element={<Problem  />} />
+        <Route path="/codingArena/:id/:slug" element={<Problem  />} />
         <Route path='/codingBattleground' element={<CodingBattle />} />
         <Route path='/contest/:id' element={<ContestPage />} />
         <Route path='/contest/:contestId/problem/:id' element={<CodingProblem />} />
@@ -38,6 +38,8 @@ function App() {
 
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<Signup />} />
+
+        <Route path='*' element={<h1 className='text-3xl font-semibold text-center pt-[13vh] capitalize'>Page not found</h1>} />
       </Routes>
     </div>
   );

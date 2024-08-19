@@ -13,7 +13,7 @@ exports.createContest = async (req, res) => {
 
         const contest = await Contest.create({
             name,
-            expiresIn,
+            expiresIn: expiresIn+0.25,
         });
 
         return res.status(200).json({
@@ -33,11 +33,15 @@ exports.createContest = async (req, res) => {
 
 exports.addProblemToContest = async (req, res) => {
     try {
-       const { problemId, contestId } = req.body; 
+       const { problemId, contestId } = req.body;
+       console.log("PRoblem", problemId);
+       console.log("Contest", contestId); 
+       
+       
        if(!contestId || !problemId) {
             return res.status(400).json({
                 success: false,
-                message: "All fields are required",
+                message: "All fields are required", 
             });
        }
 
@@ -67,6 +71,45 @@ exports.addProblemToContest = async (req, res) => {
         message: "Problem added successfully",
         contest: updatedContest,
        });
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
+    }
+};
+
+exports.removeProblem = async (req, res) => {
+    try {
+        const { problemId, contestId } = req.body;
+        if(!problemId || !contestId) {
+            return res.status(400).json({
+                success: false,
+                message: "All fields are required",
+            });
+        }
+
+        const contest = await Contest.findById(contestId);
+        if(!contest) {
+            return res.status(400).json({
+                success: false,
+                message: "Contest not found",
+            });
+        }
+
+        const updatedContest = await Contest.findByIdAndUpdate(contestId, {
+            $pull: {
+                problems: problemId,
+            }
+        }, { new: true });
+
+        return res.status(200).json({
+            success: true,
+            message: "Problem removed successfully",
+            contest: updatedContest,
+        });
 
     } catch (error) {
         console.log(error);
@@ -274,4 +317,4 @@ exports.getContestById = async (req, res) => {
             message: "Internal server error",
         })
     }
-}
+};

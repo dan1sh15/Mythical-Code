@@ -28,7 +28,7 @@ function AppContextProvider({ children }) {
         else {
             console.log(responseData.message);
         }
-    }
+    };
 
     const value = {
         loading, setLoading, userData, setUserData, loggedIn, setLoggedIn, fetchUserDetails

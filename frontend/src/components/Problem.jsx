@@ -8,10 +8,10 @@ import { AppContext } from '../context/AppContext';
 
 const Problem = () => {
 
-  const { loading, setLoading, fetchUserDetails, setLoggedIn } = useContext(AppContext);
+  const { loading, setLoading, setLoggedIn } = useContext(AppContext);
   const navigate = useNavigate();
   const [problem, setProblem] = useState({});
-  const { id } = useParams();
+  const { id, slug } = useParams();
   const [language, setLanguage] = useState('cpp');
   const [theme, setTheme] = useState('vs-dark');
   const [code, setCode] = useState("// Enter your code here");
@@ -77,8 +77,36 @@ const Problem = () => {
 }
 
   const [color, setColor] = useState("black");
+  const [status, setStatus] = useState("Not Attempted");
+
+  const populateCode = async () => {
+    const token = localStorage.getItem('token');
+    if(token) {
+      const url = process.env.REACT_APP_BASE_URL + `/getProblemCode/${slug}`;
+      const response = await fetch(url, {
+        headers: {
+          "auth-token": token,
+        },
+      });
+
+      const responseData = await response.json();
+      
+      if(responseData.success) {
+        setCode(responseData.code.code);
+        setStatus(responseData.code.status);
+      }
+    } else {
+      return;
+    }
+  };
 
   const checkProblem = async () => {
+    const token = localStorage.getItem('token');
+    if(!token) {
+      window.alert('Please login first to submit your code');
+      navigate('/login');
+      return;
+    }
     setLoading(true);
     setShowCustom(false);
         const url = process.env.REACT_APP_BASE_URL + `/checkProblem/${problem?.slug}`;
@@ -86,7 +114,8 @@ const Problem = () => {
         const response = await fetch(url, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "auth-token": token,
             },
             body: JSON.stringify({
               lang: language,
@@ -141,18 +170,12 @@ const Problem = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if(!token) {
-      setLoggedIn(false);
-      navigate('/login');
-    } else {
-      const fetchData = async () => {
-        await fetchUserDetails();
-        await fecthProblem();
-      }
-      fetchData();
-      setLoggedIn(true);
+    const fetchData = async () => {
+      await fecthProblem();
+      await populateCode();
     }
+    fetchData();
+    setLoggedIn(true);
     // eslint-disable-next-line
   }, []);
 
@@ -162,61 +185,58 @@ const Problem = () => {
   const [success, setSuccess] = useState(false);
 
   return (
-    <div className='pt-[13vh] pb-10 w-10/12 mx-auto min-h-screen grid grid-cols-2 gap-10'>
-      {/* prolem statement */}
-      <div className='flex-col flex h-full gap-y-7'>
-        <div className='flex flex-col gap-y-4'>
-          <h1 className='text-3xl font-bold'>{problem?.title}</h1>
-          <p className={`px-3 py-1 w-fit text-white ${problem?.difficulty === "Easy" ? "bg-green-400" : problem?.difficulty === "Medium" ? "bg-yellow-500" : 'bg-red-800'} rounded-md`}>{problem?.difficulty}</p>
-          <p>{problem?.description}</p>
+    <div className='pt-[13vh] pb-10 w-11/12 mx-auto min-h-screen grid grid-cols-2 gap-5 max-ipad:grid-cols-1'>
+      {/* problem statement */}
+      <div className='flex-col flex min-h-full gap-y-7 max-ipad:gap-y-5 max-md:gap-y-3'>
+        <div className='flex flex-col gap-y-4 max-md:gap-y-3'>
+          <h1 className='text-3xl font-bold max-ipad:text-2xl max-md:text-xl max-phone:text-lg'>{problem?.title}</h1>
+          <div className='flex items-center justify-between'>
+            <p className={`px-3 py-1 w-fit text-white ${problem?.difficulty === "Easy" ? "bg-green-400" : problem?.difficulty === "Medium" ? "bg-yellow-500" : 'bg-red-800'} rounded-md max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs`}>{problem?.difficulty}</p>
+            <p className='font-semibold text-sm max-md:text-xs'>{status === "Attempted" ? <span className='text-yellow-600'>Attempted</span> : status === "Solved" ? <span className='text-green-400'>Solved</span> : ""}</p>
+          </div>
+          <p className='max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>{problem?.description}</p>
         </div>
 
         <div className='flex flex-col gap-y-3'>
           <div className='flex flex-col gap-y-2'>
-            <p className='font-semibold text-lg'>Input</p>
-            <pre className='bg-gray-200 p-2 rounded'>{problem?.input}</pre>
+            <p className='font-semibold text-lg max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Input</p>
+            <pre className='bg-gray-200 p-2 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>{problem?.input}</pre>
           </div>
           <div className='flex flex-col gap-y-2'>
-            <p className='font-semibold text-lg'>Output</p>
-            <pre className='bg-gray-200 p-2 rounded'>{problem?.output}</pre>
+            <p className='font-semibold text-lg max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Output</p>
+            <pre className='bg-gray-200 p-2 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>{problem?.output}</pre>
           </div>
         </div>
       </div>  
 
     {/* editor + input */}
-      <div className='flex flex-col min-h-full gap-y-5 shadow-lg border-2 py-5 rounded-md'>
-        <div className='h-[65%] flex flex-col gap-y-3'>
+      <div className='flex flex-col h-fit gap-y-7 shadow-lg border-2 py-5 rounded-md justify-between'>
+        <div className='flex flex-col gap-y-3'>
           <div className='flex justify-between items-center px-5'>
             <select name="language"
                 value={language}
-                className='bg-white p-2 rounded outline-none text-black'
+                className='bg-white p-2 rounded outline-none text-black max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'
                 onChange={changeLanguage}
             >
                 <option value="c++">C++</option>
-                <option value="python">Ptyhon</option>
-                <option value="javascript">JavaScript</option>
+                <option value="python">Python</option>
             </select>
-
-            <div className='w-full flex items-end justify-center gap-x-3'>
-              <button onClick={runCodeHandler} className='bg-white text-green-400 border border-green-400 px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none text-sm'><FaPlay /> Run Code</button>
-              <button onClick={checkProblem} className='bg-green-500 text-white text-sm px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none'>Submit</button>
-            </div>
 
             <select name="theme" id="theme"
                 value={theme}
-                className='bg-white p-2 rounded outline-none text-black'
+                className='bg-white p-2 rounded outline-none text-black max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'
                 onChange={changeTheme}
             >
                 <option value="vs-light">vs-light</option>
                 <option value="vs-dark">vs-dark</option>
             </select>
-        </div>
+          </div>
 
-          <div className='h-full'>
+          <div className=''>
               <Editor 
                   onChange={changeHandler}
                   value={code}
-                  height={'100%'}
+                  height={'50vh'}
                   theme={theme}
                   language={language}
                   options={{
@@ -226,52 +246,58 @@ const Problem = () => {
               />
           </div>
 
+          <div className='w-full flex items-end justify-center gap-x-3 max-phone:flex-col max-phone:gap-y-2 px-5'>
+            <button onClick={runCodeHandler} className='bg-white text-green-400 border border-green-400 px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none text-sm max-phone:w-full'><FaPlay /> Run Code</button>
+            <button onClick={checkProblem} className='bg-green-500 text-white text-sm px-3 py-2 rounded flex h-full w-fit items-center justify-center max-phone:w-full gap-x-3 outline-none'>Submit</button>
+          </div>
           
         </div>
 
-        <div className='flex gap-x-3 px-5'>
-            <button onClick={() => setShowCustom(true)} className={`${showCustom && 'bg-gray-200'} px-4 py-1 rounded`}>Custom Test Case</button>
-            <button onClick={() => setShowCustom(false)} className={`${!showCustom && 'bg-gray-200'} px-4 py-1 rounded`}>Execute</button>
-        </div>
+        <div className='flex flex-col gap-y-3 justify-around h-fit'>
+          <div className='flex gap-x-3 px-5'>
+              <button onClick={() => setShowCustom(true)} className={`${showCustom && 'bg-gray-200'} px-4 py-1 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs max-phone:px-3`}>Custom Test Case</button>
+              <button onClick={() => setShowCustom(false)} className={`${!showCustom && 'bg-gray-200'} px-4 py-1 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs max-phone:px-3`}>Execute</button>
+          </div>
 
-        <div className='h-[35%]'>
-            {
-              loading ? (<Loader />) : (
-                  showCustom ? (
-                    <div className='flex w-full gap-x-3 items-center h-full px-3'>
-                        <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
-                          <label htmlFor="input" className='font-semibold'>Input</label>
-                          <textarea value={input} onChange={(e) => setInput(e.target.value)} name="input" id="input" className='outline-none resize-none bg-transparent rounded-md border border-black h-full p-2'></textarea>
+          <div className=''>
+              {
+                loading ? (<Loader />) : (
+                    showCustom ? (
+                      <div className='flex w-full gap-x-3 items-center h-full px-3 max-ipad:flex-col max-ipad:gap-y-3'>
+                          <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
+                            <label htmlFor="input" className='font-semibold max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Input</label>
+                            <textarea value={input} onChange={(e) => setInput(e.target.value)} name="input" id="input" className='outline-none resize-none bg-transparent rounded-md border border-black h-full p-2 max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'></textarea>
+                          </div>
+
+                          <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
+                            <label htmlFor="output" className='font-semibold max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Output</label>
+                            <textarea readOnly value={output} onChange={(e) => setOutput(e.target.value)} name="output" id="output" className={`outline-none border border-black rounded-md bg-transparent resize-none h-full p-2 text-${color} max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs`}></textarea>
+                          </div>
+                      </div>
+                  ) : (
+                    <div className='flex h-full flex-col px-5 justify-evenly py-2'>
+                      <div className='flex flex-col gap-y-3 items-center justify-between '>
+                        <div className='flex flex-col gap-y-2 w-full'>
+                          <p className='max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Your Output</p>
+                          <pre className='p-2 max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs bg-gray-200 text-sm rounded overflow-y-auto'>{userOutput}</pre>
                         </div>
 
-                        <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
-                          <label htmlFor="output" className='font-semibold'>Output</label>
-                          <textarea value={output} onChange={(e) => setOutput(e.target.value)} name="output" id="output" className={`outline-none border border-black rounded-md bg-transparent resize-none h-full p-2 text-${color}`}></textarea>
+                        <div className='flex flex-col gap-y-2 w-full'>
+                          <p className='max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Desired Output</p>
+                          <pre className='p-2 max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs bg-gray-200 text-sm rounded overflow-y-auto'>{problem?.output}</pre>
                         </div>
-                    </div>
-                ) : (
-                  <div className='flex h-full flex-col px-5 justify-evenly'>
-                    <div className='flex gap-x-3 items-center justify-between'>
-                      <div className='flex flex-col gap-y-2 w-full'>
-                        <p>Your Output</p>
-                        <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{userOutput}</pre>
                       </div>
 
-                      <div className='flex flex-col gap-y-2 w-full'>
-                        <p>Desired Output</p>
-                        <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{problem?.output}</pre>
+                      <div className={`w-full bg-gray-200 ${success ? 'text-green-400' : 'text-red-600'} p-2 text-center text-lg max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs mt-5 font-semibold`}>
+                        {
+                          !show ? 'Submit your code' : success ? "All test case passed" : "Test Case failed"
+                        }
                       </div>
                     </div>
-
-                    <div className={`w-full bg-gray-200 ${success ? 'text-green-400' : 'text-red-600'} p-2 text-center text-lg mt-5 font-semibold`}>
-                      {
-                        !show ? 'Submit your code' : success ? "All test case passed" : "Test Case failed"
-                      }
-                    </div>
-                  </div>
+                  )
                 )
-              )
-            }
+              }
+          </div>
         </div>
       </div>
     </div>

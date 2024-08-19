@@ -3,6 +3,8 @@ const executeCpp = require('../judges/executeCpp');
 const executePy = require("../compiler/executePython");
 const generateFile = require('../compiler/generateFile');
 const path = require("path");
+const User = require('../models/User');
+const Code = require("../models/Code");
 
 exports.addProblem = async (req, res) => {
     try {
@@ -10,7 +12,7 @@ exports.addProblem = async (req, res) => {
         await problem.save();
         res.status(201).json({
             success: true,
-            message: "Prblem added successfully",
+            message: "Problem added successfully",
             problem
         });
     }
@@ -73,6 +75,7 @@ exports.checkProblem = async (req, res) => {
     try {
         let slug = req.params.slug;
         const problem = await Problem.findOne({ slug });
+        const userId = req.user.id;
         //console.log(problem.output);
         if (!problem) {
             return res.status(400).json({ 
@@ -110,15 +113,46 @@ exports.checkProblem = async (req, res) => {
         console.log("---");
         let problemOutput = problem.output.trim();
         console.log(JSON.stringify(problemOutput));
+        const user = await User.findByIdAndUpdate(userId, {
+            $push: {
+                problems: problem._id,
+            }
+        }, {new: true}).populate('problems').exec();
+
+        const existingCode = await Code.findOne({
+            user: userId,
+            problem: problem._id,
+        });
+        let updatedCode;
+        if(existingCode) {
+            updatedCode = await Code.findOneAndUpdate({
+                user: userId,
+                problem: problem._id,
+            }, { code: code }, {new: true});
+        } else {
+            updatedCode = await Code.create({
+                code,
+                user: userId,
+                problem: problem._id,
+            });
+        }
 
         if (userOutput === problemOutput) {
+            updatedCode = await Code.findByIdAndUpdate(updatedCode._id, {
+                status: "Solved"
+            }, {new: true});
             return res.status(200).json({
                 success: true,
                 message: "All test case passed",
-                output: userOutput
-            })
+                output: userOutput,
+                user,
+                code: updatedCode,
+            });
         }
         else {
+            updatedCode = await Code.findByIdAndUpdate(updatedCode._id, {
+                status: "Attempted",
+            }, { new: true });
             return res.status(200).json({
                 success: false,
                 output: userOutput,
@@ -131,6 +165,38 @@ exports.checkProblem = async (req, res) => {
             success: false,
             message: "Internal server error",
             error,
+        });
+    }
+};
+
+exports.getProblemCode = async (req, res) => {
+    try {
+        let slug = req.params.slug;
+        const problem = await Problem.findOne({ slug });
+        const userId = req.user.id;
+
+        const codeData = await Code.findOne({
+            user: userId,
+            problem: problem._id,
+        });
+
+        if(!codeData) {
+            return res.status(200).json({
+                success: false,
+                message: "Code data not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Code data found",
+            code: codeData,
+        });
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
         });
     }
 };

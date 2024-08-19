@@ -14,7 +14,7 @@ const CodingProblem = () => {
   const { id, contestId } = useParams();
   const [language, setLanguage] = useState('cpp');
   const [theme, setTheme] = useState('vs-dark');
-  const [code, setCode] = useState("// Enter your code here");
+  const [code, setCode] = useState(localStorage.getItem('code') || '// Enter your code here');
 
   const changeLanguage = (e) => {
     setLanguage(e.target.value);
@@ -33,22 +33,27 @@ const CodingProblem = () => {
   const [output, setOutput] = useState("");
 
   const fecthProblem = async () => {
+    setLoading(true);
     const url = process.env.REACT_APP_BASE_URL + `/getProblem/${id}`;
     const response = await fetch(url);
 
     const responseData = await response.json();
 
     if(responseData.success) {
+      setLoading(false);
       setProblem(responseData.problem);
       console.log(problem);
     } else {
+      setLoading(false);
       toast.error(responseData.message);
     }
+    setLoading(false);
   };
 
+  const [loader, setLoader] = useState(false);
 
   const runCodeHandler = async () => {
-    setLoading(true);
+    setLoader(true);
     setShowCustom(true);
     const url = process.env.REACT_APP_BASE_URL + '/run';
 
@@ -72,20 +77,22 @@ const CodingProblem = () => {
     } else {
         toast.error(responseData.message);
     }
-    setLoading(false);
+    setLoader(false);
 }
 
   const [color, setColor] = useState("black");
 
   const checkProblem = async () => {
-    setLoading(true);
+    localStorage.setItem('code', code);
+    setLoader(true);
     setShowCustom(false);
         const url = process.env.REACT_APP_BASE_URL + `/checkProblem/${problem?.slug}`;
 
         const response = await fetch(url, {
             method: "POST",
             headers: {
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
+                "auth-token": localStorage.getItem('token')
             },
             body: JSON.stringify({
               lang: language,
@@ -93,9 +100,10 @@ const CodingProblem = () => {
             })
         });
 
-
         const responseData = await response.json();
         if(responseData.success) {
+          console.log("Problem Accepted");
+          
           setSuccess(true);
           setShow(true);
           setUserOutput(responseData.output);
@@ -137,13 +145,15 @@ const CodingProblem = () => {
           setSuccess(false);
           setUserOutput(responseData.output)
         }
-        setLoading(false);
+        setLoader(false);
         return 0;
   };
 
   const submitHandler = async () => {
-    setLoading(true);
+    setLoader(true);
     const score = await checkProblem();
+    console.log("Score", score);
+    
     const url = process.env.REACT_APP_BASE_URL + '/addScore';
     const response = await fetch(url, {
         method: "POST",
@@ -160,10 +170,10 @@ const CodingProblem = () => {
 
     const responseData = await response.json();
     if(responseData.success) {
-        setLoading(false);
+        setLoader(false);
         toast.success("Score updated successfully");
     } else {
-        setLoading(false);
+        setLoader(false);
         toast.error("Score cannot be updated at the moment");
     }
   }
@@ -190,119 +200,129 @@ const CodingProblem = () => {
   const [success, setSuccess] = useState(false);
 
   return (
-    <div className='pt-[13vh] pb-10 w-10/12 mx-auto min-h-screen grid grid-cols-2 gap-10'>
-      {/* prolem statement */}
-      <div className='flex-col flex h-full gap-y-7'>
-        <div className='flex flex-col gap-y-4'>
-          <h1 className='text-3xl font-bold'>{problem?.title}</h1>
-          <p className={`px-3 py-1 w-fit text-white ${problem?.difficulty === "Easy" ? "bg-green-400" : problem?.difficulty === "Medium" ? "bg-yellow-500" : 'bg-red-800'} rounded-md`}>{problem?.difficulty}</p>
-          <p>{problem?.description}</p>
-        </div>
+    <>
+      {
+        loading ? (<div className='h-screen flex items-center justify-center'><Loader /></div>) : (
+          <div className='pt-[13vh] pb-10 w-11/12 mx-auto min-h-screen grid grid-cols-2 gap-5 max-ipad:grid-cols-1'>
+            {/* prolem statement */}
+            <div className='flex-col flex min-h-full gap-y-7 max-ipad:gap-y-5 max-md:gap-y-3'>
+              <div className='flex flex-col gap-y-4 max-md:gap-y-3'>
+                <h1 className='text-3xl font-bold max-ipad:text-2xl max-md:text-xl max-phone:text-lg'>{problem?.title}</h1>
+                <p className={`px-3 py-1 w-fit text-white ${problem?.difficulty === "Easy" ? "bg-green-400" : problem?.difficulty === "Medium" ? "bg-yellow-500" : 'bg-red-800'} rounded-md max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs`}>{problem?.difficulty}</p>
+                <p className='max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>{problem?.description}</p>
+              </div>
 
-        <div className='flex flex-col gap-y-3'>
-          <div className='flex flex-col gap-y-2'>
-            <p className='font-semibold text-lg'>Input</p>
-            <pre className='bg-gray-200 p-2 rounded'>{problem?.input}</pre>
-          </div>
-          <div className='flex flex-col gap-y-2'>
-            <p className='font-semibold text-lg'>Output</p>
-            <pre className='bg-gray-200 p-2 rounded'>{problem?.output}</pre>
-          </div>
-        </div>
-      </div>  
+              <div className='flex flex-col gap-y-3'>
+                <div className='flex flex-col gap-y-2'>
+                  <p className='font-semibold text-lg max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Input</p>
+                  <pre className='bg-gray-200 p-2 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>{problem?.input}</pre>
+                </div>
+                <div className='flex flex-col gap-y-2'>
+                  <p className='font-semibold text-lg max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Output</p>
+                  <pre className='bg-gray-200 p-2 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>{problem?.output}</pre>
+                </div>
+              </div>
+            </div>  
 
-    {/* editor + input */}
-      <div className='flex flex-col min-h-full gap-y-5 shadow-lg border-2 py-5 rounded-md'>
-        <div className='h-[65%] flex flex-col gap-y-3'>
-          <div className='flex justify-between items-center px-5'>
-            <select name="language"
-                value={language}
-                className='bg-white p-2 rounded outline-none text-black'
-                onChange={changeLanguage}
-            >
-                <option value="c++">C++</option>
-                <option value="python">Ptyhon</option>
-                <option value="javascript">JavaScript</option>
-            </select>
+          {/* editor + input */}
+            <div className='flex flex-col h-fit gap-y-7 shadow-lg border-2 py-5 rounded-md justify-between'>
+              <div className='flex flex-col gap-y-3'>
+                <div className='flex justify-between items-center px-5'>
+                  <select name="language"
+                      value={language}
+                      className='bg-white p-2 rounded outline-none text-black max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'
+                      onChange={changeLanguage}
+                  >
+                      <option value="c++">C++</option>
+                      <option value="python">Ptyhon</option>
+                  </select>
 
-            <div className='w-full flex items-end justify-center gap-x-3'>
-              <button onClick={runCodeHandler} className='bg-white text-green-400 border border-green-400 px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none text-sm'><FaPlay /> Run Code</button>
-              <button onClick={submitHandler} className='bg-green-500 text-white text-sm px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none'>Submit</button>
+                  
+
+                  <select name="theme" id="theme"
+                      value={theme}
+                      className='bg-white p-2 rounded outline-none text-black max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'
+                      onChange={changeTheme}
+                  >
+                      <option value="vs-light">vs-light</option>
+                      <option value="vs-dark">vs-dark</option>
+                  </select>
+              </div>
+
+                <div className=''>
+                    <Editor 
+                        onChange={changeHandler}
+                        value={code}
+                        height={'50vh'}
+                        theme={theme}
+                        language={language}
+                        options={{
+                            fontSize: "16px",
+                            wordWrap: "on"
+                        }}
+                    />
+                </div>
+
+                <div className='w-full flex items-end justify-center gap-x-3 max-phone:flex-col max-phone:gap-y-2 px-5'>
+                  <button onClick={runCodeHandler} className='bg-white text-green-400 border border-green-400 px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none text-sm max-phone:w-full'><FaPlay /> Run Code</button>
+                  <button onClick={submitHandler} className='bg-green-500 text-white text-sm px-3 py-2 rounded flex h-full w-fit items-center justify-center gap-x-3 outline-none max-phone:w-full'>Submit</button>
+                </div>
+                
+              </div>
+
+              <div className='flex flex-col gap-y-3 justify-around h-fit'>
+
+                <div className='flex gap-x-3 px-5'>
+                    <button onClick={() => setShowCustom(true)} className={`${showCustom && 'bg-gray-200'} px-4 py-1 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs max-phone:px-3`}>Custom Test Case</button>
+                    <button onClick={() => setShowCustom(false)} className={`${!showCustom && 'bg-gray-200'} px-4 py-1 rounded max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs max-phone:px-3`}>Execute</button>
+                </div>
+
+                <div className=''>
+                    {
+                      loader ? (<Loader />) : (
+                          showCustom ? (
+                            <div className='flex w-full gap-x-3 items-center h-full px-3 max-ipad:flex-col max-ipad:gap-y-3'>
+                                <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
+                                  <label htmlFor="input" className='font-semibold max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Input</label>
+                                  <textarea value={input} onChange={(e) => setInput(e.target.value)} name="input" id="input" className='outline-none resize-none bg-transparent rounded-md border border-black h-full p-2 max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'></textarea>
+                                </div>
+
+                                <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
+                                  <label htmlFor="output" className='font-semibold max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Output</label>
+                                  <textarea readOnly value={output} onChange={(e) => setOutput(e.target.value)} name="output" id="output" className={`outline-none border border-black rounded-md bg-transparent resize-none h-full p-2 text-${color} max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs`}></textarea>
+                                </div>
+                            </div>
+                        ) : (
+                          <div className='flex h-full flex-col px-5 justify-evenly'>
+                            <div className='flex flex-col gap-y-3 items-center justify-between'>
+                                <div className='flex flex-col gap-y-2 w-full'>
+                                    <p className='max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Your Output</p>
+                                    <pre className='p-2 max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs bg-gray-200 text-sm rounded overflow-y-auto'>{userOutput}</pre>
+                                </div>
+
+                                <div className='flex flex-col gap-y-2 w-full'>
+                                    <p className='max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs'>Desired Output</p>
+                                    <pre className='p-2 max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs bg-gray-200 text-sm rounded overflow-y-auto'>{problem?.output}</pre>
+                                </div>
+                            </div>
+
+                            <div className={`w-full bg-gray-200 ${success ? 'text-green-400' : 'text-red-600'} p-2 text-center text-lg max-ipad:text-[1rem] max-md:text-sm max-phone:text-xs mt-5 font-semibold`}>
+                              {
+                                !show ? 'Submit your code' : success ? "All test case passed" : "Test Case failed"
+                              }
+                            </div>
+                          </div>
+                        )
+                      )
+                    }
+                </div>
+              </div>
+
             </div>
-
-            <select name="theme" id="theme"
-                value={theme}
-                className='bg-white p-2 rounded outline-none text-black'
-                onChange={changeTheme}
-            >
-                <option value="vs-light">vs-light</option>
-                <option value="vs-dark">vs-dark</option>
-            </select>
-        </div>
-
-          <div className='h-full'>
-              <Editor 
-                  onChange={changeHandler}
-                  value={code}
-                  height={'100%'}
-                  theme={theme}
-                  language={language}
-                  options={{
-                      fontSize: "16px",
-                      wordWrap: "on"
-                  }}
-              />
           </div>
-
-          
-        </div>
-
-        <div className='flex gap-x-3 px-5'>
-            <button onClick={() => setShowCustom(true)} className={`${showCustom && 'bg-gray-200'} px-4 py-1 rounded`}>Custom Test Case</button>
-            <button onClick={() => setShowCustom(false)} className={`${!showCustom && 'bg-gray-200'} px-4 py-1 rounded`}>Execute</button>
-        </div>
-
-        <div className='h-[35%]'>
-            {
-              loading ? (<Loader />) : (
-                  showCustom ? (
-                    <div className='flex w-full gap-x-3 items-center h-full px-3'>
-                        <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
-                          <label htmlFor="input" className='font-semibold'>Input</label>
-                          <textarea value={input} onChange={(e) => setInput(e.target.value)} name="input" id="input" className='outline-none resize-none bg-transparent rounded-md border border-black h-full p-2'></textarea>
-                        </div>
-
-                        <div className='flex flex-col gap-y-1 bg-[#fff] p-3 h-full w-full rounded'>
-                          <label htmlFor="output" className='font-semibold'>Output</label>
-                          <textarea value={output} onChange={(e) => setOutput(e.target.value)} name="output" id="output" className={`outline-none border border-black rounded-md bg-transparent resize-none h-full p-2 text-${color}`}></textarea>
-                        </div>
-                    </div>
-                ) : (
-                  <div className='flex h-full flex-col px-5 justify-evenly'>
-                    <div className='flex gap-x-3 items-center justify-between'>
-                        <div className='flex flex-col gap-y-2 w-full'>
-                            <p>Your Output</p>
-                            <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{userOutput}</pre>
-                        </div>
-
-                        <div className='flex flex-col gap-y-2 w-full'>
-                            <p>Desired Output</p>
-                            <pre className='p-2 bg-gray-200 text-sm rounded overflow-y-auto'>{problem?.output}</pre>
-                        </div>
-                    </div>
-
-                    <div className={`w-full bg-gray-200 ${success ? 'text-green-400' : 'text-red-600'} p-2 text-center text-lg mt-5 font-semibold`}>
-                      {
-                        !show ? 'Submit your code' : success ? "All test case passed" : "Test Case failed"
-                      }
-                    </div>
-                  </div>
-                )
-              )
-            }
-        </div>
-      </div>
-    </div>
+        )
+      }
+    </>
   )
 }
 
